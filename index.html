@@ -197,6 +197,11 @@
       <label class="field-label">Body Part Frequency (30 days)</label>
       <div id="bodyPartFreq" class="bp-freq"></div>
     </div>
+
+    <div class="card">
+      <label class="field-label">Fun Insights</label>
+      <div id="insightsGrid" class="insights-grid"></div>
+    </div>
   </section>
 
   <!-- WEIGHT TAB -->
@@ -222,6 +227,90 @@
     </div>
   </section>
 
+  <!-- COACH TAB -->
+  <section class="view hidden" id="view-coach">
+    <div class="card">
+      <label class="field-label">Exercise Level</label>
+      <div class="btn-group" id="coachDifficultyGroup">
+        <button type="button" class="choice-btn small" data-value="Simple">🥉<span>Simple</span></button>
+        <button type="button" class="choice-btn small" data-value="Medium">🥈<span>Medium</span></button>
+        <button type="button" class="choice-btn small" data-value="Advanced">🥇<span>Advanced</span></button>
+      </div>
+    </div>
+
+    <div class="card">
+      <label class="field-label small-label" style="margin-top:0;">Total workout time (minutes)</label>
+      <input type="number" id="coachTime" class="text-input" min="10" max="180" step="5" placeholder="e.g. 45">
+    </div>
+
+    <div class="card">
+      <label class="field-label">Your Goal</label>
+      <div class="btn-grid" id="coachGoalGroup">
+        <button type="button" class="choice-btn small" data-value="Lose Weight">🔥<span>Lose Weight</span></button>
+        <button type="button" class="choice-btn small" data-value="Build Muscle">💪<span>Build Muscle</span></button>
+        <button type="button" class="choice-btn small" data-value="Get Stronger">🏋️<span>Get Stronger</span></button>
+        <button type="button" class="choice-btn small" data-value="Marathon Training">🏃<span>Marathon Training</span></button>
+        <button type="button" class="choice-btn small" data-value="Tone &amp; Sculpt">✨<span>Tone &amp; Sculpt</span></button>
+      </div>
+    </div>
+
+    <div class="card">
+      <label class="field-label">Body Parts Targeted <span class="field-hint">(pick up to 2)</span></label>
+      <div class="btn-grid" id="coachBodyPartGroup">
+        <button type="button" class="choice-btn small" data-value="Chest">💪<span>Chest</span></button>
+        <button type="button" class="choice-btn small" data-value="Back">🔙<span>Back</span></button>
+        <button type="button" class="choice-btn small" data-value="Shoulders">🎯<span>Shoulders</span></button>
+        <button type="button" class="choice-btn small" data-value="Arms">💪<span>Arms</span></button>
+        <button type="button" class="choice-btn small" data-value="Legs">🦵<span>Legs</span></button>
+        <button type="button" class="choice-btn small" data-value="Core">🔥<span>Core</span></button>
+        <button type="button" class="choice-btn small" data-value="Full Body">⚡<span>Full Body</span></button>
+      </div>
+    </div>
+
+    <div class="card">
+      <label class="field-label">Intensity</label>
+      <div class="btn-group" id="coachIntensityGroup">
+        <button type="button" class="choice-btn small" data-value="Light">🙂<span>Light</span></button>
+        <button type="button" class="choice-btn small" data-value="Moderate">😅<span>Moderate</span></button>
+        <button type="button" class="choice-btn small" data-value="High">🥵<span>High</span></button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="row-between">
+        <label class="field-label">Include Cardio?</label>
+        <label class="switch">
+          <input type="checkbox" id="coachCardioToggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div id="coachCardioPanel" class="cardio-panel hidden">
+        <label class="field-label small-label">Type</label>
+        <div class="btn-group" id="coachCardioTypeGroup">
+          <button type="button" class="choice-btn small" data-value="Indoor Running">🏃<span>Indoor</span></button>
+          <button type="button" class="choice-btn small" data-value="Outdoor Running">🌳<span>Outdoor</span></button>
+          <button type="button" class="choice-btn small" data-value="HIIT">⚡<span>HIIT</span></button>
+        </div>
+        <label class="field-label small-label">Duration (minutes, out of your total time)</label>
+        <input type="number" id="coachCardioDuration" class="text-input" min="5" max="120" step="5" placeholder="e.g. 15">
+      </div>
+    </div>
+
+    <div id="coachWarning" class="score-sub hidden" style="color: var(--danger); text-align:center; margin-bottom: 10px;"></div>
+    <button type="button" id="coachGenerateBtn" class="save-btn">Generate Workout</button>
+
+    <div class="card hidden" id="coachResultCard">
+      <label class="field-label" id="coachResultTitle">Your Workout</label>
+      <div id="coachResultMeta" class="score-sub" style="margin-bottom: 12px;"></div>
+      <div id="coachExerciseList" class="coach-exercise-list"></div>
+      <div id="coachCardioBlock" class="coach-cardio-block hidden"></div>
+      <div class="coach-action-row">
+        <button type="button" id="coachShuffleBtn" class="text-btn">🔀 Shuffle Exercises</button>
+        <button type="button" id="coachLogBtn" class="text-btn">📝 Log This Workout</button>
+      </div>
+    </div>
+  </section>
+
 </main>
 
 <nav class="tabbar">
@@ -229,6 +318,7 @@
   <button class="tab-btn" data-tab="calendar"><span class="tab-icon">📅</span><span>Calendar</span></button>
   <button class="tab-btn" data-tab="stats"><span class="tab-icon">📊</span><span>Stats</span></button>
   <button class="tab-btn" data-tab="weight"><span class="tab-icon">⚖️</span><span>Weight</span></button>
+  <button class="tab-btn" data-tab="coach"><span class="tab-icon">🧠</span><span>Coach</span></button>
 </nav>
 
 <script src="app.js"></script>
