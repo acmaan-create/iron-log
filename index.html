@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0d0f12">
+<title>Iron Log — Gym Tracker</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark">IRON</span><span class="brand-mark-accent">LOG</span>
+  </div>
+  <div class="streak-pill" id="headerStreak">
+    <span class="flame">🔥</span><span id="headerStreakVal">0</span>
+  </div>
+</header>
+
+<main id="app">
+
+  <!-- LOG TAB -->
+  <section class="view" id="view-log">
+    <div class="card date-card">
+      <label class="field-label">Date</label>
+      <input type="date" id="logDate" class="date-input">
+    </div>
+
+    <div class="card">
+      <label class="field-label">Where did you train?</label>
+      <div class="btn-group" id="gymGroup">
+        <button type="button" class="choice-btn" data-value="Personal">🏠<span>Personal Gym</span></button>
+        <button type="button" class="choice-btn" data-value="Office">🏢<span>Office Gym</span></button>
+      </div>
+    </div>
+
+    <div class="card">
+      <label class="field-label">Body parts targeted</label>
+      <div class="btn-grid" id="bodyPartGroup">
+        <button type="button" class="choice-btn small" data-value="Chest">💪<span>Chest</span></button>
+        <button type="button" class="choice-btn small" data-value="Back">🔙<span>Back</span></button>
+        <button type="button" class="choice-btn small" data-value="Shoulders">🎯<span>Shoulders</span></button>
+        <button type="button" class="choice-btn small" data-value="Arms">💪<span>Arms</span></button>
+        <button type="button" class="choice-btn small" data-value="Legs">🦵<span>Legs</span></button>
+        <button type="button" class="choice-btn small" data-value="Core">🔥<span>Core</span></button>
+        <button type="button" class="choice-btn small" data-value="Full Body">⚡<span>Full Body</span></button>
+      </div>
+      <div id="exerciseExamples" class="exercise-examples"></div>
+    </div>
+
+    <div class="card">
+      <div class="row-between">
+        <label class="field-label">Cardio</label>
+        <label class="switch">
+          <input type="checkbox" id="cardioToggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div id="cardioPanel" class="cardio-panel hidden">
+        <label class="field-label small-label">Type</label>
+        <div class="btn-group">
+          <button type="button" class="choice-btn small" data-value="Indoor Running">🏃<span>Indoor</span></button>
+          <button type="button" class="choice-btn small" data-value="Outdoor Running">🌳<span>Outdoor</span></button>
+          <button type="button" class="choice-btn small" data-value="HIIT">⚡<span>HIIT</span></button>
+        </div>
+        <input type="hidden" id="cardioType">
+
+        <label class="field-label small-label">Duration (minutes)</label>
+        <input type="number" id="cardioDuration" class="text-input" min="0" max="300" placeholder="e.g. 30">
+
+        <label class="field-label small-label">Effort <span id="effortVal">5</span>/10</label>
+        <input type="range" id="cardioEffort" min="1" max="10" value="5" class="effort-slider">
+        <div class="effort-labels"><span>Easy</span><span>Max</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <label class="field-label small-label">Notes (optional)</label>
+      <textarea id="notes" class="text-input notes-input" rows="2" placeholder="How did it feel?"></textarea>
+    </div>
+
+    <button id="saveBtn" class="save-btn">Save Workout</button>
+    <div id="saveMsg" class="save-msg hidden">Saved ✓</div>
+  </section>
+
+  <!-- CALENDAR TAB -->
+  <section class="view hidden" id="view-calendar">
+    <div class="card">
+      <div class="cal-nav">
+        <button id="prevMonth" class="nav-btn">‹</button>
+        <div id="calMonthLabel" class="cal-month-label"></div>
+        <button id="nextMonth" class="nav-btn">›</button>
+      </div>
+      <div class="cal-weekdays">
+        <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+      </div>
+      <div id="calGrid" class="cal-grid"></div>
+      <div class="cal-legend">
+        <span class="legend-item"><i class="dot personal"></i>Personal</span>
+        <span class="legend-item"><i class="dot office"></i>Office</span>
+        <span class="legend-item"><i class="dot cardio"></i>Cardio</span>
+      </div>
+    </div>
+
+    <div class="card" id="dayDetailCard" style="display:none;">
+      <div class="row-between">
+        <div id="dayDetailTitle" class="field-label"></div>
+        <button id="closeDayDetail" class="text-btn">Close</button>
+      </div>
+      <div id="dayDetailBody"></div>
+    </div>
+  </section>
+
+  <!-- STATS TAB -->
+  <section class="view hidden" id="view-stats">
+    <div class="card stat-hero">
+      <div class="stat-hero-item">
+        <div class="stat-hero-num" id="currentStreakNum">0</div>
+        <div class="stat-hero-label">🔥 Current Streak</div>
+      </div>
+      <div class="stat-hero-item">
+        <div class="stat-hero-num" id="bestStreakNum">0</div>
+        <div class="stat-hero-label">🏆 Best Streak</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <label class="field-label">This Week</label>
+      <div class="week-bar" id="weekBar"></div>
+      <div class="week-count" id="weekCountLabel">0 / 7 days</div>
+    </div>
+
+    <div class="card score-card">
+      <label class="field-label">Weekly Health Score</label>
+      <div class="score-ring-wrap">
+        <svg viewBox="0 0 120 120" class="score-ring">
+          <circle cx="60" cy="60" r="52" class="ring-bg"></circle>
+          <circle cx="60" cy="60" r="52" class="ring-fg" id="ringFg"></circle>
+        </svg>
+        <div class="score-ring-val" id="scoreVal">0%</div>
+      </div>
+      <div class="score-sub" id="scoreSub">Train more days this week to raise your score</div>
+    </div>
+
+    <div class="card">
+      <label class="field-label">This Month</label>
+      <div class="month-stats">
+        <div class="month-stat"><span id="monthDays">0</span><small>Days trained</small></div>
+        <div class="month-stat"><span id="monthCardio">0</span><small>Cardio sessions</small></div>
+        <div class="month-stat"><span id="monthMins">0</span><small>Cardio mins</small></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <label class="field-label">Body Part Frequency (30 days)</label>
+      <div id="bodyPartFreq" class="bp-freq"></div>
+    </div>
+  </section>
+
+</main>
+
+<nav class="tabbar">
+  <button class="tab-btn active" data-tab="log"><span class="tab-icon">🏋️</span><span>Log</span></button>
+  <button class="tab-btn" data-tab="calendar"><span class="tab-icon">📅</span><span>Calendar</span></button>
+  <button class="tab-btn" data-tab="stats"><span class="tab-icon">📊</span><span>Stats</span></button>
+</nav>
+
+<script src="app.js"></script>
+</body>
+</html>
