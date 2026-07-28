@@ -1,18 +1,18 @@
-/* ---------- Iron Log — gym tracker theme ---------- */
+/* ---------- Iron Log — cream & burnt gold theme ---------- */
 :root{
-  --bg: #0d0f12;
-  --bg-elev: #16191f;
-  --bg-elev-2: #1e222a;
-  --border: #2a2f38;
-  --text: #f2f3f5;
-  --text-dim: #9aa1ab;
-  --accent: #d7ff3a;      /* neon lime, gym-app energy */
-  --accent-dim: #a3c92c;
-  --accent-ink: #10130a;
-  --personal: #5ec8ff;
-  --office: #ff9f5e;
-  --cardio: #ff5e7e;
-  --danger: #ff5e5e;
+  --bg: #f6ecd9;
+  --bg-elev: #fffaf0;
+  --bg-elev-2: #f0e2c2;
+  --border: #e2cfa2;
+  --text: #3a2a18;
+  --text-dim: #8a7355;
+  --accent: #c96a1f;      /* burnt orange */
+  --accent-dim: #a85618;
+  --accent-ink: #fff8ec;
+  --personal: #d9a441;    /* goldenrod */
+  --office: #a8562f;      /* burnt sienna */
+  --cardio: #c1440e;      /* rust red-orange */
+  --danger: #b3261e;
   --radius: 16px;
   --radius-sm: 10px;
 }
@@ -42,6 +42,7 @@ body{
 .brand{ font-weight: 800; letter-spacing: 1px; font-size: 20px; }
 .brand-mark{ color: var(--text); }
 .brand-mark-accent{ color: var(--accent); }
+.topbar-right{ display:flex; align-items:center; gap:10px; }
 .streak-pill{
   display:flex; align-items:center; gap:6px;
   background: var(--bg-elev);
@@ -52,6 +53,41 @@ body{
   font-size: 14px;
 }
 .flame{ font-size: 15px; }
+.gear-btn{
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  width: 34px; height: 34px;
+  border-radius: 999px;
+  font-size: 15px;
+  cursor: pointer;
+}
+.greeting{
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 0 20px 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+.greeting.hidden{ display:none; }
+
+/* ---------- overlay / profile panel ---------- */
+.overlay{
+  position: fixed; inset:0; z-index: 30;
+  background: rgba(58,42,24,0.45);
+  display:flex; align-items:flex-end; justify-content:center;
+}
+.overlay.hidden{ display:none; }
+.overlay .panel{
+  width: 100%; max-width: 480px;
+  margin: 0;
+  border-bottom-left-radius: 0; border-bottom-right-radius: 0;
+  animation: slideUp .2s ease;
+}
+@keyframes slideUp{
+  from{ transform: translateY(24px); opacity: 0; }
+  to{ transform: translateY(0); opacity: 1; }
+}
 
 /* ---------- layout ---------- */
 #app{
@@ -67,6 +103,7 @@ body{
   border-radius: var(--radius);
   padding: 16px;
   margin-bottom: 14px;
+  box-shadow: 0 1px 2px rgba(58,42,24,0.05);
 }
 
 .field-label{
@@ -96,7 +133,6 @@ body{
   font-family: inherit;
 }
 .notes-input{ resize: vertical; }
-.date-input::-webkit-calendar-picker-indicator{ filter: invert(1); }
 
 /* ---------- choice buttons ---------- */
 .btn-group{ display:flex; gap:10px; flex-wrap: wrap; }
@@ -150,7 +186,7 @@ body{
 }
 
 /* ---------- switch ---------- */
-.switch{ position:relative; display:inline-block; width:46px; height:26px; }
+.switch{ position:relative; display:inline-block; width:46px; height:26px; flex-shrink:0; }
 .switch input{ opacity:0; width:0; height:0; }
 .slider{
   position:absolute; inset:0; cursor:pointer;
@@ -179,7 +215,7 @@ body{
   font-size: 11px; color: var(--text-dim); margin-top: 2px;
 }
 
-/* ---------- save button ---------- */
+/* ---------- save / text buttons ---------- */
 .save-btn{
   width:100%;
   background: var(--accent);
@@ -202,8 +238,10 @@ body{
 
 .text-btn{
   background:none; border:none; color: var(--accent);
-  font-weight: 700; font-size: 13px; cursor:pointer;
+  font-weight: 700; font-size: 13px; cursor:pointer; padding:0;
 }
+.text-btn.danger{ color: var(--danger); }
+.text-btn.hidden{ display:none; }
 
 /* ---------- calendar ---------- */
 .cal-nav{ display:flex; align-items:center; justify-content:space-between; margin-bottom: 10px; }
@@ -240,6 +278,7 @@ body{
 
 #dayDetailBody{ font-size: 14px; color: var(--text-dim); line-height: 1.7; }
 #dayDetailBody b{ color: var(--text); }
+.day-detail-actions{ display:flex; gap:14px; flex-wrap: wrap; margin-top: 10px; }
 
 /* ---------- stats ---------- */
 .stat-hero{ display:flex; }
@@ -285,13 +324,39 @@ body{
 .bp-row .bp-fill{ height:100%; background: var(--accent); }
 .bp-row .bp-count{ width: 20px; text-align:right; font-weight:700; }
 
+/* ---------- weight tab ---------- */
+.weight-input-row{ display:flex; gap:10px; margin-bottom: 12px; }
+.weight-input-row .date-input{ flex: 1.3; }
+.weight-input-row .text-input{ flex: 1; }
+.weight-chart-wrap{ width:100%; }
+.weight-chart-wrap svg{ width:100%; height:auto; display:block; }
+.weight-empty{ text-align:center; color: var(--text-dim); font-size: 13px; padding: 20px 0; }
+.weight-summary{
+  display:flex; justify-content:space-around; text-align:center; margin-top: 10px;
+}
+.weight-summary .ws-item span{ display:block; font-size: 20px; font-weight: 800; color: var(--accent); }
+.weight-summary .ws-item small{ color: var(--text-dim); font-size: 11px; }
+
+.weight-history{ display:flex; flex-direction:column; gap:8px; max-height: 260px; overflow-y:auto; }
+.weight-history-row{
+  display:flex; align-items:center; justify-content:space-between;
+  background: var(--bg-elev-2); border:1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 10px 12px; font-size: 13px;
+}
+.weight-history-row .wh-date{ color: var(--text-dim); }
+.weight-history-row .wh-val{ font-weight: 700; }
+.weight-history-row .wh-del{
+  background:none; border:none; color: var(--danger); font-size: 13px; font-weight:700; cursor:pointer;
+}
+.weight-empty-history{ text-align:center; color: var(--text-dim); font-size: 13px; padding: 10px 0; }
+
 /* ---------- tab bar ---------- */
 .tabbar{
   position: fixed; bottom:0; left:0; right:0;
   display:flex;
   background: var(--bg-elev);
   border-top: 1px solid var(--border);
-  padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+  padding: 8px 6px calc(8px + env(safe-area-inset-bottom));
   z-index: 20;
 }
 .tab-btn{
