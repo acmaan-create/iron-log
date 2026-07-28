@@ -5,6 +5,8 @@
   var PROFILE_KEY = "ironlog.profile.v1";
   var WEIGHTS_KEY = "ironlog.weights.v1";
   var COACH_SETTINGS_KEY = "ironlog.coachSettings.v1";
+  var THEME_KEY = "ironlog.theme.v1";
+  var THEME_COLORS = { cream: "#f6ecd9", onyx: "#15171c", navy: "#f4f1ea", emerald: "#181c1a" };
 
   var EXERCISES = {
     "Chest": ["Bench Press", "Incline Dumbbell Press", "Push-ups", "Chest Fly", "Dips"],
@@ -118,6 +120,28 @@
   function entryIsEmpty(e) {
     return !e || (!e.gym && (!e.bodyParts || !e.bodyParts.length) && !e.cardio && !e.notes);
   }
+
+  // ================= THEME =================
+  var themeGroup = document.getElementById("themeGroup");
+
+  function applyTheme(name) {
+    document.documentElement.setAttribute("data-theme", name);
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (meta && THEME_COLORS[name]) meta.setAttribute("content", THEME_COLORS[name]);
+    themeGroup.querySelectorAll(".theme-swatch").forEach(function (b) {
+      b.classList.toggle("selected", b.dataset.value === name);
+    });
+  }
+
+  themeGroup.querySelectorAll(".theme-swatch").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var name = btn.dataset.value;
+      saveJSON(THEME_KEY, name);
+      applyTheme(name);
+    });
+  });
+
+  applyTheme(loadJSON(THEME_KEY, "cream"));
 
   // ================= PROFILE =================
   var gearBtn = document.getElementById("gearBtn");

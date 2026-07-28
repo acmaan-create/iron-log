@@ -5,6 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#f6ecd9">
 <title>Iron Log — Gym Tracker</title>
+<script>
+(function () {
+  try {
+    var raw = localStorage.getItem("ironlog.theme.v1");
+    var theme = raw ? JSON.parse(raw) : null;
+    if (theme) document.documentElement.setAttribute("data-theme", theme);
+  } catch (e) {}
+})();
+</script>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -29,6 +38,27 @@
       <label class="field-label">Your Profile</label>
       <button type="button" class="text-btn" id="closeProfile">Close</button>
     </div>
+
+    <label class="field-label">Theme</label>
+    <div class="theme-grid" id="themeGroup">
+      <button type="button" class="theme-swatch" data-value="cream">
+        <span class="swatch-preview"><span style="background:#f6ecd9"></span><span style="background:#c96a1f"></span></span>
+        Cream &amp; Gold
+      </button>
+      <button type="button" class="theme-swatch" data-value="onyx">
+        <span class="swatch-preview"><span style="background:#15171c"></span><span style="background:#d4af37"></span></span>
+        Midnight Onyx
+      </button>
+      <button type="button" class="theme-swatch" data-value="navy">
+        <span class="swatch-preview"><span style="background:#f4f1ea"></span><span style="background:#1d3557"></span></span>
+        Ivory Navy
+      </button>
+      <button type="button" class="theme-swatch" data-value="emerald">
+        <span class="swatch-preview"><span style="background:#181c1a"></span><span style="background:#2f9e6e"></span></span>
+        Charcoal Emerald
+      </button>
+    </div>
+
     <label class="field-label small-label">Name</label>
     <input type="text" id="profName" class="text-input" placeholder="Your name">
 

@@ -1,5 +1,6 @@
-/* ---------- Iron Log — cream & burnt gold theme ---------- */
-:root{
+/* ---------- Iron Log — theme system ---------- */
+:root,
+:root[data-theme="cream"]{
   --bg: #f6ecd9;
   --bg-elev: #fffaf0;
   --bg-elev-2: #f0e2c2;
@@ -13,6 +14,60 @@
   --office: #a8562f;      /* burnt sienna */
   --cardio: #c1440e;      /* rust red-orange */
   --danger: #b3261e;
+  --radius: 16px;
+  --radius-sm: 10px;
+}
+
+:root[data-theme="onyx"]{
+  --bg: #15171c;
+  --bg-elev: #1d2027;
+  --bg-elev-2: #262a33;
+  --border: #343a47;
+  --text: #f2f0ea;
+  --text-dim: #98a0b3;
+  --accent: #d4af37;      /* metallic gold */
+  --accent-dim: #b3922c;
+  --accent-ink: #15171c;
+  --personal: #d4af37;
+  --office: #7c8aa0;
+  --cardio: #c1594a;
+  --danger: #e2665f;
+  --radius: 16px;
+  --radius-sm: 10px;
+}
+
+:root[data-theme="navy"]{
+  --bg: #f4f1ea;
+  --bg-elev: #ffffff;
+  --bg-elev-2: #e9e4d8;
+  --border: #d8d2c0;
+  --text: #1c2b3a;
+  --text-dim: #5b6b7c;
+  --accent: #1d3557;      /* deep navy */
+  --accent-dim: #16273f;
+  --accent-ink: #f4f1ea;
+  --personal: #8c6d3f;    /* muted bronze */
+  --office: #457b9d;      /* slate blue */
+  --cardio: #9d3b3b;
+  --danger: #b3261e;
+  --radius: 16px;
+  --radius-sm: 10px;
+}
+
+:root[data-theme="emerald"]{
+  --bg: #181c1a;
+  --bg-elev: #1f2521;
+  --bg-elev-2: #28302a;
+  --border: #37423b;
+  --text: #eef2ef;
+  --text-dim: #93a89c;
+  --accent: #2f9e6e;      /* emerald */
+  --accent-dim: #26805a;
+  --accent-ink: #0d120f;
+  --personal: #2f9e6e;
+  --office: #c9a24a;      /* muted gold */
+  --cardio: #c1594a;
+  --danger: #e2665f;
   --radius: 16px;
   --radius-sm: 10px;
 }
@@ -81,6 +136,8 @@ body{
 .overlay .panel{
   width: 100%; max-width: 480px;
   margin: 0;
+  max-height: 85vh;
+  overflow-y: auto;
   border-bottom-left-radius: 0; border-bottom-right-radius: 0;
   animation: slideUp .2s ease;
 }
@@ -124,6 +181,9 @@ body{
 /* ---------- inputs ---------- */
 .date-input, .text-input{
   width:100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
   background: var(--bg-elev-2);
   border: 1px solid var(--border);
   color: var(--text);
@@ -132,7 +192,13 @@ body{
   font-size: 15px;
   font-family: inherit;
 }
+.date-input{
+  display: block;
+  -webkit-appearance: none;
+  appearance: none;
+}
 .notes-input{ resize: vertical; }
+.date-card{ overflow: hidden; }
 
 /* ---------- choice buttons ---------- */
 .btn-group{ display:flex; gap:10px; flex-wrap: wrap; }
@@ -353,6 +419,21 @@ body{
 }
 .coach-cardio-block.hidden{ display:none; }
 .coach-action-row{ display:flex; justify-content:space-between; gap:14px; margin-top: 14px; flex-wrap: wrap; }
+
+/* ---------- theme swatches ---------- */
+.theme-grid{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+.theme-swatch{
+  display:flex; flex-direction:column; align-items:center; gap:8px;
+  background: var(--bg-elev-2); border: 2px solid var(--border);
+  border-radius: var(--radius-sm); padding: 12px 8px; cursor:pointer;
+  font-size: 12px; font-weight: 600; color: var(--text);
+}
+.theme-swatch.selected{ border-color: var(--accent); }
+.theme-swatch .swatch-preview{
+  width: 100%; height: 32px; border-radius: 8px; overflow:hidden; display:flex;
+  border: 1px solid rgba(0,0,0,0.1);
+}
+.theme-swatch .swatch-preview span{ flex:1; height:100%; }
 
 /* ---------- weight tab ---------- */
 .weight-input-row{ display:flex; gap:10px; margin-bottom: 12px; }
