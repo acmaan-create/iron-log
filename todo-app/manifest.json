@@ -1,0 +1,13 @@
+{
+  "name": "TaskPilot",
+  "short_name": "TaskPilot",
+  "description": "Comprehensive synced to-do list with reminders and voice notes",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0f1115",
+  "theme_color": "#6c5ce7",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
