@@ -347,32 +347,45 @@
       <label class="field-label">Log a Meal Out</label>
       <input type="date" id="eatoutDate" class="date-input" style="margin-bottom:12px;">
 
-      <label class="field-label small-label">What did you eat?</label>
-      <select id="eatoutDishSelect" class="text-input">
-        <option value="">Select a dish…</option>
-        <option value="🍛 Biryani">🍛 Biryani</option>
-        <option value="🍗 Butter Chicken">🍗 Butter Chicken</option>
-        <option value="🧀 Paneer Butter Masala">🧀 Paneer Butter Masala</option>
-        <option value="🫓 Chole Bhature">🫓 Chole Bhature</option>
-        <option value="🍞 Pav Bhaji">🍞 Pav Bhaji</option>
-        <option value="🥞 Masala Dosa">🥞 Masala Dosa</option>
-        <option value="🍚 Idli Sambar">🍚 Idli Sambar</option>
-        <option value="🥔 Vada Pav">🥔 Vada Pav</option>
-        <option value="🥟 Momos">🥟 Momos</option>
-        <option value="🍕 Pizza">🍕 Pizza</option>
-        <option value="🍔 Burger">🍔 Burger</option>
-        <option value="🍜 Hakka Noodles / Manchurian">🍜 Hakka Noodles / Manchurian</option>
-        <option value="🌯 Shawarma">🌯 Shawarma</option>
-        <option value="🌯 Kathi Roll">🌯 Kathi Roll</option>
-        <option value="🍽️ Thali">🍽️ Thali</option>
-        <option value="🍝 Pasta">🍝 Pasta</option>
-        <option value="🍣 Sushi">🍣 Sushi</option>
-        <option value="🍢 Tandoori / Kebabs">🍢 Tandoori / Kebabs</option>
-        <option value="🥘 Chaat / Samosa">🥘 Chaat / Samosa</option>
-        <option value="🍨 Ice Cream / Dessert">🍨 Ice Cream / Dessert</option>
-        <option value="Other">✏️ Other (type it in)</option>
-      </select>
-      <input type="text" id="eatoutDishOther" class="text-input hidden" placeholder="What did you order?" style="margin-top:10px;">
+      <label class="field-label small-label">What did you eat? <span class="field-hint">(pick as many as you like)</span></label>
+      <div class="btn-grid" id="eatoutDishGroup">
+        <button type="button" class="choice-btn small" data-value="🍛 Biryani">🍛<span>Biryani</span></button>
+        <button type="button" class="choice-btn small" data-value="🍗 Butter Chicken">🍗<span>Butter Chicken</span></button>
+        <button type="button" class="choice-btn small" data-value="🧀 Paneer Masala">🧀<span>Paneer Masala</span></button>
+        <button type="button" class="choice-btn small" data-value="🫓 Chole Bhature">🫓<span>Chole Bhature</span></button>
+        <button type="button" class="choice-btn small" data-value="🍞 Pav Bhaji">🍞<span>Pav Bhaji</span></button>
+        <button type="button" class="choice-btn small" data-value="🥞 Dosa">🥞<span>Dosa</span></button>
+        <button type="button" class="choice-btn small" data-value="🍚 Idli Sambar">🍚<span>Idli Sambar</span></button>
+        <button type="button" class="choice-btn small" data-value="🥔 Vada Pav">🥔<span>Vada Pav</span></button>
+        <button type="button" class="choice-btn small" data-value="🥟 Momos">🥟<span>Momos</span></button>
+        <button type="button" class="choice-btn small" data-value="🍕 Pizza">🍕<span>Pizza</span></button>
+        <button type="button" class="choice-btn small" data-value="🍔 Burger">🍔<span>Burger</span></button>
+        <button type="button" class="choice-btn small" data-value="🍜 Noodles">🍜<span>Noodles</span></button>
+        <button type="button" class="choice-btn small" data-value="🥡 Manchurian">🥡<span>Manchurian</span></button>
+        <button type="button" class="choice-btn small" data-value="🌯 Shawarma">🌯<span>Shawarma</span></button>
+        <button type="button" class="choice-btn small" data-value="🌯 Kathi Roll">🌯<span>Kathi Roll</span></button>
+        <button type="button" class="choice-btn small" data-value="🍽️ Thali">🍽️<span>Thali</span></button>
+        <button type="button" class="choice-btn small" data-value="🍝 Pasta">🍝<span>Pasta</span></button>
+        <button type="button" class="choice-btn small" data-value="🍣 Sushi">🍣<span>Sushi</span></button>
+        <button type="button" class="choice-btn small" data-value="🍢 Tandoori/Kebab">🍢<span>Tandoori/Kebab</span></button>
+        <button type="button" class="choice-btn small" data-value="🥘 Chaat/Samosa">🥘<span>Chaat/Samosa</span></button>
+        <button type="button" class="choice-btn small" data-value="🍨 Dessert">🍨<span>Dessert</span></button>
+      </div>
+      <input type="text" id="eatoutDishOther" class="text-input" placeholder="Other dish(es)? Type here, comma-separated" style="margin-top:10px;">
+
+      <label class="field-label small-label">Cuisine <span class="field-hint">(optional — pick instead of, or alongside, dishes)</span></label>
+      <div class="btn-grid" id="eatoutCuisineGroup">
+        <button type="button" class="choice-btn small" data-value="North Indian">🇮🇳<span>North Indian</span></button>
+        <button type="button" class="choice-btn small" data-value="South Indian">🥥<span>South Indian</span></button>
+        <button type="button" class="choice-btn small" data-value="Chinese / Indo-Chinese">🥢<span>Chinese</span></button>
+        <button type="button" class="choice-btn small" data-value="Italian">🍝<span>Italian</span></button>
+        <button type="button" class="choice-btn small" data-value="Mexican">🌮<span>Mexican</span></button>
+        <button type="button" class="choice-btn small" data-value="Middle Eastern">🧆<span>Middle Eastern</span></button>
+        <button type="button" class="choice-btn small" data-value="Continental">🍱<span>Continental</span></button>
+        <button type="button" class="choice-btn small" data-value="Bakery / Desserts">🧁<span>Bakery/Desserts</span></button>
+        <button type="button" class="choice-btn small" data-value="Street Food">🛣️<span>Street Food</span></button>
+        <button type="button" class="choice-btn small" data-value="Other Asian">🌏<span>Other Asian</span></button>
+      </div>
 
       <label class="field-label small-label">Meal</label>
       <div class="btn-group" id="eatoutMealGroup">

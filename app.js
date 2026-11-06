@@ -1196,8 +1196,9 @@
 
   // ================= EAT OUT TAB =================
   var eatoutDate = document.getElementById("eatoutDate");
-  var eatoutDishSelect = document.getElementById("eatoutDishSelect");
+  var eatoutDishGroup = document.getElementById("eatoutDishGroup");
   var eatoutDishOther = document.getElementById("eatoutDishOther");
+  var eatoutCuisineGroup = document.getElementById("eatoutCuisineGroup");
   var eatoutMealGroup = document.getElementById("eatoutMealGroup");
   var eatoutCost = document.getElementById("eatoutCost");
   var eatoutWarning = document.getElementById("eatoutWarning");
@@ -1211,18 +1212,46 @@
 
   eatoutDate.value = todayKey();
   var selectedMealType = null;
+  var selectedDishes = [];
+  var selectedCuisines = [];
 
   wireSingleSelect(eatoutMealGroup, function (v) { selectedMealType = v; });
 
-  eatoutDishSelect.addEventListener("change", function () {
-    eatoutDishOther.classList.toggle("hidden", eatoutDishSelect.value !== "Other");
-  });
+  function wireMultiSelect(group, arrRef) {
+    group.querySelectorAll(".choice-btn").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var val = btn.dataset.value;
+        var idx = arrRef.indexOf(val);
+        if (idx > -1) {
+          arrRef.splice(idx, 1);
+          btn.classList.remove("selected");
+        } else {
+          arrRef.push(val);
+          btn.classList.add("selected");
+        }
+      });
+    });
+  }
+  wireMultiSelect(eatoutDishGroup, selectedDishes);
+  wireMultiSelect(eatoutCuisineGroup, selectedCuisines);
+
+  // dishes the user typed in by hand, parsed out of getDishesOf() for legacy records too
+  function getDishesOf(r) {
+    if (r.dishes && r.dishes.length) return r.dishes;
+    if (r.dish) return [r.dish];
+    return [];
+  }
+  function getCuisinesOf(r) {
+    return r.cuisines || [];
+  }
 
   function resetEatoutForm() {
     eatoutDate.value = todayKey();
-    eatoutDishSelect.value = "";
+    selectedDishes.length = 0;
+    selectedCuisines.length = 0;
+    eatoutDishGroup.querySelectorAll(".choice-btn").forEach(function (b) { b.classList.remove("selected"); });
+    eatoutCuisineGroup.querySelectorAll(".choice-btn").forEach(function (b) { b.classList.remove("selected"); });
     eatoutDishOther.value = "";
-    eatoutDishOther.classList.add("hidden");
     selectedMealType = null;
     eatoutMealGroup.querySelectorAll(".choice-btn").forEach(function (b) { b.classList.remove("selected"); });
     eatoutCost.value = "";
@@ -1230,9 +1259,14 @@
   }
 
   eatoutSaveBtn.addEventListener("click", function () {
-    var dish = eatoutDishSelect.value === "Other" ? eatoutDishOther.value.trim() : eatoutDishSelect.value;
-    if (!dish) {
-      eatoutWarning.textContent = "Pick what you ate, or type it in.";
+    var customDishes = eatoutDishOther.value
+      .split(",")
+      .map(function (s) { return s.trim(); })
+      .filter(function (s) { return s.length; });
+    var dishes = selectedDishes.concat(customDishes);
+    var cuisines = selectedCuisines.slice();
+    if (!dishes.length && !cuisines.length) {
+      eatoutWarning.textContent = "Pick at least one dish or cuisine, or type one in.";
       eatoutWarning.classList.remove("hidden");
       return;
     }
@@ -1240,7 +1274,8 @@
     eatouts.push({
       id: Date.now() + "-" + Math.random().toString(36).slice(2, 8),
       date: eatoutDate.value || todayKey(),
-      dish: dish,
+      dishes: dishes,
+      cuisines: cuisines,
       mealType: selectedMealType,
       cost: eatoutCost.value ? Number(eatoutCost.value) : null
     });
@@ -1334,10 +1369,20 @@
     chip("🏆", computeBestHomeCookedStreak(streak), "Best Home-Cooked Streak");
 
     var freq = {};
-    eatouts.forEach(function (r) { freq[r.dish] = (freq[r.dish] || 0) + 1; });
+    eatouts.forEach(function (r) {
+      getDishesOf(r).forEach(function (dish) { freq[dish] = (freq[dish] || 0) + 1; });
+    });
     var favDish = "—", favCount = 0;
     Object.keys(freq).forEach(function (dish) { if (freq[dish] > favCount) { favCount = freq[dish]; favDish = dish; } });
     chip("⭐", favDish, "Most Ordered");
+
+    var cuisineFreq = {};
+    eatouts.forEach(function (r) {
+      getCuisinesOf(r).forEach(function (c) { cuisineFreq[c] = (cuisineFreq[c] || 0) + 1; });
+    });
+    var favCuisine = null, favCuisineCount = 0;
+    Object.keys(cuisineFreq).forEach(function (c) { if (cuisineFreq[c] > favCuisineCount) { favCuisineCount = cuisineFreq[c]; favCuisine = c; } });
+    if (favCuisine) chip("🌍", favCuisine, "Favorite Cuisine");
 
     var now = new Date();
     var spentThisMonth = eatouts.reduce(function (sum, r) {
@@ -1392,6 +1437,12 @@
       return 0;
     });
     sorted.forEach(function (r) {
+      var dishes = getDishesOf(r);
+      var cuisines = getCuisinesOf(r);
+      var label = dishes.join(" + ");
+      if (cuisines.length) label += (label ? " " : "") + "(" + cuisines.join(", ") + ")";
+      if (!label) label = "Ate out";
+
       var row = document.createElement("div");
       row.className = "weight-history-row";
       var left = document.createElement("span");
@@ -1399,13 +1450,13 @@
       left.textContent = fromKey(r.date).toDateString() + (r.mealType ? " · " + r.mealType : "");
       var mid = document.createElement("span");
       mid.className = "wh-val";
-      mid.textContent = r.dish + (r.cost ? " · ₹" + r.cost : "");
+      mid.textContent = label + (r.cost ? " · ₹" + r.cost : "");
       var delBtn = document.createElement("button");
       delBtn.type = "button";
       delBtn.className = "wh-del";
       delBtn.textContent = "Delete";
       delBtn.addEventListener("click", function () {
-        if (!confirm("Delete this eat-out entry (" + r.dish + ")?")) return;
+        if (!confirm("Delete this eat-out entry (" + label + ")?")) return;
         eatouts = eatouts.filter(function (x) { return x.id !== r.id; });
         saveEatouts();
         renderEatoutTab();
