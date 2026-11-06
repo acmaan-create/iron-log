@@ -153,6 +153,9 @@ body{
   padding: 0 16px;
 }
 .view.hidden{ display:none; }
+.hidden{ display:none; }
+.insight-chip.warn{ border-color: var(--danger); }
+.insight-chip.warn .ic-value{ color: var(--danger); }
 
 .card{
   background: var(--bg-elev);

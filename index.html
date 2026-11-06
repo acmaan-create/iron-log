@@ -14,7 +14,7 @@
   } catch (e) {}
 })();
 </script>
-<link rel="stylesheet" href="style.css?v=4">
+<link rel="stylesheet" href="style.css?v=5">
 </head>
 <body>
 
@@ -344,9 +344,24 @@
   <!-- EAT OUT TAB -->
   <section class="view hidden" id="view-eatout">
     <div class="card">
-      <label class="field-label">Log a Meal Out</label>
+      <label class="field-label">Log Today's Meal</label>
       <input type="date" id="eatoutDate" class="date-input" style="margin-bottom:12px;">
 
+      <label class="field-label small-label" style="margin-top:0;">Did you eat out, or was it home-made?</label>
+      <div class="btn-group" id="eatoutTypeGroup">
+        <button type="button" class="choice-btn" data-value="eatout">🍽️<span>Ate Out</span></button>
+        <button type="button" class="choice-btn" data-value="home">🏠<span>Home-Made</span></button>
+      </div>
+
+      <label class="field-label small-label">Meal</label>
+      <div class="btn-group" id="eatoutMealGroup">
+        <button type="button" class="choice-btn small" data-value="Breakfast">🌅<span>Breakfast</span></button>
+        <button type="button" class="choice-btn small" data-value="Lunch">☀️<span>Lunch</span></button>
+        <button type="button" class="choice-btn small" data-value="Dinner">🌙<span>Dinner</span></button>
+        <button type="button" class="choice-btn small" data-value="Snack">🍿<span>Snack</span></button>
+      </div>
+
+      <div id="eatoutOutFields">
       <label class="field-label small-label">What did you eat? <span class="field-hint">(pick as many as you like)</span></label>
       <div class="btn-grid" id="eatoutDishGroup">
         <button type="button" class="choice-btn small" data-value="🍛 Biryani">🍛<span>Biryani</span></button>
@@ -387,23 +402,21 @@
         <button type="button" class="choice-btn small" data-value="Other Asian">🌏<span>Other Asian</span></button>
       </div>
 
-      <label class="field-label small-label">Meal</label>
-      <div class="btn-group" id="eatoutMealGroup">
-        <button type="button" class="choice-btn small" data-value="Breakfast">🌅<span>Breakfast</span></button>
-        <button type="button" class="choice-btn small" data-value="Lunch">☀️<span>Lunch</span></button>
-        <button type="button" class="choice-btn small" data-value="Dinner">🌙<span>Dinner</span></button>
-        <button type="button" class="choice-btn small" data-value="Snack">🍿<span>Snack</span></button>
-      </div>
-
       <label class="field-label small-label">Approx. cost (₹, optional)</label>
       <input type="number" id="eatoutCost" class="text-input" min="0" step="10" placeholder="e.g. 350">
+      </div>
+
+      <div id="eatoutHomeFields" class="hidden">
+        <label class="field-label small-label">What did you cook? <span class="field-hint">(optional)</span></label>
+        <input type="text" id="eatoutHomeNotes" class="text-input" placeholder="e.g. Dal, rice, sabzi">
+      </div>
 
       <div id="eatoutWarning" class="score-sub hidden" style="color: var(--danger); text-align:center; margin-top: 10px;"></div>
       <button type="button" id="eatoutSaveBtn" class="save-btn">Log Meal Out</button>
     </div>
 
     <div class="card">
-      <label class="field-label">Eat-Out Meter — This Week</label>
+      <label class="field-label" id="eatoutScoreCardLabel">This Week's Score</label>
       <div class="score-ring-wrap">
         <svg viewBox="0 0 120 120" class="score-ring">
           <circle cx="60" cy="60" r="52" class="ring-bg"></circle>
@@ -440,6 +453,6 @@
   <button class="tab-btn" data-tab="eatout"><span class="tab-icon">🍽️</span><span>Eats</span></button>
 </nav>
 
-<script src="app.js?v=4"></script>
+<script src="app.js?v=5"></script>
 </body>
 </html>

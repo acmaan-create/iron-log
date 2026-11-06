@@ -1196,11 +1196,15 @@
 
   // ================= EAT OUT TAB =================
   var eatoutDate = document.getElementById("eatoutDate");
+  var eatoutTypeGroup = document.getElementById("eatoutTypeGroup");
+  var eatoutOutFields = document.getElementById("eatoutOutFields");
+  var eatoutHomeFields = document.getElementById("eatoutHomeFields");
   var eatoutDishGroup = document.getElementById("eatoutDishGroup");
   var eatoutDishOther = document.getElementById("eatoutDishOther");
   var eatoutCuisineGroup = document.getElementById("eatoutCuisineGroup");
   var eatoutMealGroup = document.getElementById("eatoutMealGroup");
   var eatoutCost = document.getElementById("eatoutCost");
+  var eatoutHomeNotes = document.getElementById("eatoutHomeNotes");
   var eatoutWarning = document.getElementById("eatoutWarning");
   var eatoutSaveBtn = document.getElementById("eatoutSaveBtn");
   var eatoutRingFg = document.getElementById("eatoutRingFg");
@@ -1211,10 +1215,17 @@
   var eatoutHistoryEl = document.getElementById("eatoutHistory");
 
   eatoutDate.value = todayKey();
+  var selectedLogType = null;
   var selectedMealType = null;
   var selectedDishes = [];
   var selectedCuisines = [];
 
+  wireSingleSelect(eatoutTypeGroup, function (v) {
+    selectedLogType = v;
+    eatoutOutFields.classList.toggle("hidden", v !== "eatout");
+    eatoutHomeFields.classList.toggle("hidden", v !== "home");
+    eatoutSaveBtn.textContent = v === "home" ? "Log Home-Made Meal" : "Log Meal Out";
+  });
   wireSingleSelect(eatoutMealGroup, function (v) { selectedMealType = v; });
 
   function wireMultiSelect(group, arrRef) {
@@ -1235,7 +1246,9 @@
   wireMultiSelect(eatoutDishGroup, selectedDishes);
   wireMultiSelect(eatoutCuisineGroup, selectedCuisines);
 
-  // dishes the user typed in by hand, parsed out of getDishesOf() for legacy records too
+  // records before this feature only ever represented an eat-out, so a missing
+  // type means "eatout" — keeps old saved data working under the new schema
+  function getType(r) { return r.type || "eatout"; }
   function getDishesOf(r) {
     if (r.dishes && r.dishes.length) return r.dishes;
     if (r.dish) return [r.dish];
@@ -1247,11 +1260,17 @@
 
   function resetEatoutForm() {
     eatoutDate.value = todayKey();
+    selectedLogType = null;
+    eatoutTypeGroup.querySelectorAll(".choice-btn").forEach(function (b) { b.classList.remove("selected"); });
+    eatoutOutFields.classList.remove("hidden");
+    eatoutHomeFields.classList.add("hidden");
+    eatoutSaveBtn.textContent = "Log Meal Out";
     selectedDishes.length = 0;
     selectedCuisines.length = 0;
     eatoutDishGroup.querySelectorAll(".choice-btn").forEach(function (b) { b.classList.remove("selected"); });
     eatoutCuisineGroup.querySelectorAll(".choice-btn").forEach(function (b) { b.classList.remove("selected"); });
     eatoutDishOther.value = "";
+    eatoutHomeNotes.value = "";
     selectedMealType = null;
     eatoutMealGroup.querySelectorAll(".choice-btn").forEach(function (b) { b.classList.remove("selected"); });
     eatoutCost.value = "";
@@ -1259,44 +1278,62 @@
   }
 
   eatoutSaveBtn.addEventListener("click", function () {
-    var customDishes = eatoutDishOther.value
-      .split(",")
-      .map(function (s) { return s.trim(); })
-      .filter(function (s) { return s.length; });
-    var dishes = selectedDishes.concat(customDishes);
-    var cuisines = selectedCuisines.slice();
-    if (!dishes.length && !cuisines.length) {
-      eatoutWarning.textContent = "Pick at least one dish or cuisine, or type one in.";
+    if (!selectedLogType) {
+      eatoutWarning.textContent = "Pick whether you ate out or had home-made food.";
       eatoutWarning.classList.remove("hidden");
       return;
     }
-    eatoutWarning.classList.add("hidden");
-    eatouts.push({
+
+    var record = {
       id: Date.now() + "-" + Math.random().toString(36).slice(2, 8),
       date: eatoutDate.value || todayKey(),
-      dishes: dishes,
-      cuisines: cuisines,
+      type: selectedLogType,
       mealType: selectedMealType,
-      cost: eatoutCost.value ? Number(eatoutCost.value) : null
-    });
+      dishes: [],
+      cuisines: [],
+      cost: null,
+      notes: ""
+    };
+
+    if (selectedLogType === "eatout") {
+      var customDishes = eatoutDishOther.value
+        .split(",")
+        .map(function (s) { return s.trim(); })
+        .filter(function (s) { return s.length; });
+      record.dishes = selectedDishes.concat(customDishes);
+      record.cuisines = selectedCuisines.slice();
+      record.cost = eatoutCost.value ? Number(eatoutCost.value) : null;
+      if (!record.dishes.length && !record.cuisines.length) {
+        eatoutWarning.textContent = "Pick at least one dish or cuisine, or type one in.";
+        eatoutWarning.classList.remove("hidden");
+        return;
+      }
+    } else {
+      record.notes = eatoutHomeNotes.value.trim();
+    }
+
+    eatoutWarning.classList.add("hidden");
+    eatouts.push(record);
     saveEatouts();
     resetEatoutForm();
     renderEatoutTab();
   });
 
+  // "home-cooked streak" = consecutive days with no eat-out logged. An explicit
+  // home-made log is a bonus/positive signal but isn't required for a day to count.
   function computeHomeCookedStreak() {
     if (!eatouts.length) return null;
-    var dateSet = {};
-    eatouts.forEach(function (r) { dateSet[r.date] = true; });
-    if (dateSet[todayKey()]) return 0;
-    var sortedDates = eatouts.map(function (r) { return r.date; }).sort();
-    var earliest = fromKey(sortedDates[0]);
+    var eatoutDateSet = {};
+    eatouts.forEach(function (r) { if (getType(r) === "eatout") eatoutDateSet[r.date] = true; });
+    if (eatoutDateSet[todayKey()]) return 0;
+    var allDates = eatouts.map(function (r) { return r.date; }).sort();
+    var earliest = fromKey(allDates[0]);
     var streak = 0;
     var d = new Date();
     d.setHours(0, 0, 0, 0);
     d.setDate(d.getDate() - 1);
     while (d >= earliest) {
-      if (dateSet[toKey(d)]) break;
+      if (eatoutDateSet[toKey(d)]) break;
       streak++;
       d.setDate(d.getDate() - 1);
     }
@@ -1304,33 +1341,65 @@
   }
 
   function computeBestHomeCookedStreak(current) {
-    if (!eatouts.length) return 0;
-    var uniqueDates = Array.from(new Set(eatouts.map(function (r) { return r.date; }))).sort();
+    var eatoutDates = Array.from(new Set(
+      eatouts.filter(function (r) { return getType(r) === "eatout"; }).map(function (r) { return r.date; })
+    )).sort();
     var best = 0;
-    for (var i = 1; i < uniqueDates.length; i++) {
-      var gap = Math.round((fromKey(uniqueDates[i]) - fromKey(uniqueDates[i - 1])) / 86400000) - 1;
+    for (var i = 1; i < eatoutDates.length; i++) {
+      var gap = Math.round((fromKey(eatoutDates[i]) - fromKey(eatoutDates[i - 1])) / 86400000) - 1;
       if (gap > best) best = gap;
     }
     if (current !== null && current > best) best = current;
     return best;
   }
 
-  function renderEatoutMeter() {
+  // "eating-out streak" = consecutive days up to today where an eat-out was logged.
+  // Returns 0 when there's no eat-out today, since the streak only matters while active.
+  function computeEatingOutStreak() {
+    var dateSet = {};
+    eatouts.forEach(function (r) { if (getType(r) === "eatout") dateSet[r.date] = true; });
+    var d = new Date();
+    d.setHours(0, 0, 0, 0);
+    if (!dateSet[toKey(d)]) return 0;
+    var streak = 0;
+    while (dateSet[toKey(d)]) {
+      streak++;
+      d.setDate(d.getDate() - 1);
+    }
+    return streak;
+  }
+
+  // Weekly score: each day so far this week scores 100 (home-made or no eat-out
+  // logged — benefit of the doubt), 50 (both logged the same day), or 0 (ate out
+  // with no home-made meal that day). Averaged over the days elapsed this week.
+  function computeWeeklyScore() {
     var weekStart = startOfWeek(new Date());
-    var weekEnd = new Date(weekStart);
-    weekEnd.setDate(weekEnd.getDate() + 7);
-    var count = eatouts.filter(function (r) {
-      var d = fromKey(r.date);
-      return d >= weekStart && d < weekEnd;
-    }).length;
-    var pct = Math.min(100, Math.round((count / 7) * 100));
-    eatoutScoreVal.textContent = count + (count === 1 ? " meal" : " meals");
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
+    var daysElapsed = Math.round((today - weekStart) / 86400000) + 1;
+    var total = 0;
+    for (var i = 0; i < daysElapsed; i++) {
+      var d = new Date(weekStart);
+      d.setDate(d.getDate() + i);
+      var key = toKey(d);
+      var hasHome = eatouts.some(function (r) { return r.date === key && getType(r) === "home"; });
+      var hasOut = eatouts.some(function (r) { return r.date === key && getType(r) === "eatout"; });
+      if (hasOut && hasHome) total += 50;
+      else if (hasOut) total += 0;
+      else total += 100;
+    }
+    return Math.round(total / daysElapsed);
+  }
+
+  function renderEatoutMeter() {
+    var pct = computeWeeklyScore();
+    eatoutScoreVal.textContent = pct + "%";
     var circumference = 2 * Math.PI * 52;
     eatoutRingFg.style.strokeDasharray = circumference;
     eatoutRingFg.style.strokeDashoffset = circumference - (circumference * pct) / 100;
     var color, msg;
-    if (count <= 1) { color = "var(--accent)"; msg = "🌿 Clean week — mostly home-cooked! Keep it up."; }
-    else if (count <= 3) { color = "var(--office)"; msg = "👍 Balanced week — a treat here and there is fine."; }
+    if (pct >= 85) { color = "var(--accent)"; msg = "🌿 Clean week — mostly home-cooked! Keep it up."; }
+    else if (pct >= 50) { color = "var(--office)"; msg = "👍 Balanced week — a treat here and there is fine."; }
     else { color = "var(--danger)"; msg = "🍽️ Lots of eating out this week — maybe cook one meal tomorrow?"; }
     eatoutRingFg.style.stroke = color;
     eatoutScoreSub.textContent = msg;
@@ -1338,9 +1407,9 @@
 
   function renderEatoutInsights() {
     eatoutInsightsEl.innerHTML = "";
-    function chip(emoji, value, label) {
+    function chip(emoji, value, label, warn) {
       var el = document.createElement("div");
-      el.className = "insight-chip";
+      el.className = "insight-chip" + (warn ? " warn" : "");
       el.innerHTML =
         '<span class="ic-emoji">' + emoji + '</span>' +
         '<span class="ic-value">' + escapeHtml(String(value)) + '</span>' +
@@ -1349,35 +1418,47 @@
     }
 
     if (!eatouts.length) {
-      chip("🥗", "No data yet", "Log a meal out to unlock insights");
+      chip("🏠", "No data yet", "Log a meal to unlock insights");
       return;
     }
+
+    var eatoutEntries = eatouts.filter(function (r) { return getType(r) === "eatout"; });
+    var homeEntries = eatouts.filter(function (r) { return getType(r) === "home"; });
 
     var weekStart = startOfWeek(new Date());
     var weekEnd = new Date(weekStart); weekEnd.setDate(weekEnd.getDate() + 7);
     var lastWeekStart = new Date(weekStart); lastWeekStart.setDate(lastWeekStart.getDate() - 7);
-    var thisWeekCount = eatouts.filter(function (r) { var d = fromKey(r.date); return d >= weekStart && d < weekEnd; }).length;
-    var lastWeekCount = eatouts.filter(function (r) { var d = fromKey(r.date); return d >= lastWeekStart && d < weekStart; }).length;
+    var thisWeekCount = eatoutEntries.filter(function (r) { var d = fromKey(r.date); return d >= weekStart && d < weekEnd; }).length;
+    var lastWeekCount = eatoutEntries.filter(function (r) { var d = fromKey(r.date); return d >= lastWeekStart && d < weekStart; }).length;
+    var homeThisWeek = homeEntries.filter(function (r) { var d = fromKey(r.date); return d >= weekStart && d < weekEnd; }).length;
     var deltaWeek = thisWeekCount - lastWeekCount;
     var trendEmoji = deltaWeek <= 0 ? "📉" : "📈";
     var trendText = deltaWeek < 0 ? ("Down " + Math.abs(deltaWeek)) : deltaWeek > 0 ? ("Up " + deltaWeek) : "Same";
+
+    // the good stuff first
+    var streak = computeHomeCookedStreak();
+    chip("🏠", streak === null ? "—" : streak, "Home-Cooked Streak");
+    chip("🏆", computeBestHomeCookedStreak(streak), "Best Home-Cooked Streak");
+    chip("🍲", homeThisWeek, "Home-Made This Week");
+
+    // the cautionary stuff
     chip("🍽️", thisWeekCount, "Meals Out This Week");
     chip(trendEmoji, trendText, "Vs Last Week");
-
-    var streak = computeHomeCookedStreak();
-    chip("🥗", streak === null ? "—" : streak, "Home-Cooked Streak");
-    chip("🏆", computeBestHomeCookedStreak(streak), "Best Home-Cooked Streak");
+    var orderingStreak = computeEatingOutStreak();
+    if (orderingStreak > 0) {
+      chip("⚠️", orderingStreak + (orderingStreak === 1 ? " day" : " days"), "Ordering Streak — break it today!", true);
+    }
 
     var freq = {};
-    eatouts.forEach(function (r) {
+    eatoutEntries.forEach(function (r) {
       getDishesOf(r).forEach(function (dish) { freq[dish] = (freq[dish] || 0) + 1; });
     });
     var favDish = "—", favCount = 0;
     Object.keys(freq).forEach(function (dish) { if (freq[dish] > favCount) { favCount = freq[dish]; favDish = dish; } });
-    chip("⭐", favDish, "Most Ordered");
+    if (favCount > 0) chip("⭐", favDish, "Most Ordered");
 
     var cuisineFreq = {};
-    eatouts.forEach(function (r) {
+    eatoutEntries.forEach(function (r) {
       getCuisinesOf(r).forEach(function (c) { cuisineFreq[c] = (cuisineFreq[c] || 0) + 1; });
     });
     var favCuisine = null, favCuisineCount = 0;
@@ -1385,7 +1466,7 @@
     if (favCuisine) chip("🌍", favCuisine, "Favorite Cuisine");
 
     var now = new Date();
-    var spentThisMonth = eatouts.reduce(function (sum, r) {
+    var spentThisMonth = eatoutEntries.reduce(function (sum, r) {
       var d = fromKey(r.date);
       if (d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear() && r.cost) return sum + r.cost;
       return sum;
@@ -1395,12 +1476,13 @@
 
   function renderEatoutTrend() {
     eatoutTrendEl.innerHTML = "";
+    var eatoutEntries = eatouts.filter(function (r) { return getType(r) === "eatout"; });
     var weeks = [];
     for (var i = 7; i >= 0; i--) {
       var ws = startOfWeek(new Date());
       ws.setDate(ws.getDate() - i * 7);
       var we = new Date(ws); we.setDate(we.getDate() + 7);
-      var count = eatouts.filter(function (r) { var d = fromKey(r.date); return d >= ws && d < we; }).length;
+      var count = eatoutEntries.filter(function (r) { var d = fromKey(r.date); return d >= ws && d < we; }).length;
       weeks.push({ start: ws, count: count });
     }
     var maxCount = Math.max.apply(null, weeks.map(function (w) { return w.count; }).concat([1]));
@@ -1428,7 +1510,7 @@
     if (!eatouts.length) {
       var eh = document.createElement("div");
       eh.className = "weight-empty-history";
-      eh.textContent = "No meals out logged yet.";
+      eh.textContent = "No meals logged yet.";
       eatoutHistoryEl.appendChild(eh);
       return;
     }
@@ -1437,11 +1519,17 @@
       return 0;
     });
     sorted.forEach(function (r) {
-      var dishes = getDishesOf(r);
-      var cuisines = getCuisinesOf(r);
-      var label = dishes.join(" + ");
-      if (cuisines.length) label += (label ? " " : "") + "(" + cuisines.join(", ") + ")";
-      if (!label) label = "Ate out";
+      var isHome = getType(r) === "home";
+      var label;
+      if (isHome) {
+        label = "🏠 Home-Made" + (r.notes ? " — " + r.notes : "");
+      } else {
+        var dishes = getDishesOf(r);
+        var cuisines = getCuisinesOf(r);
+        label = dishes.join(" + ");
+        if (cuisines.length) label += (label ? " " : "") + "(" + cuisines.join(", ") + ")";
+        if (!label) label = "Ate out";
+      }
 
       var row = document.createElement("div");
       row.className = "weight-history-row";
@@ -1456,7 +1544,7 @@
       delBtn.className = "wh-del";
       delBtn.textContent = "Delete";
       delBtn.addEventListener("click", function () {
-        if (!confirm("Delete this eat-out entry (" + label + ")?")) return;
+        if (!confirm("Delete this entry (" + label + ")?")) return;
         eatouts = eatouts.filter(function (x) { return x.id !== r.id; });
         saveEatouts();
         renderEatoutTab();
