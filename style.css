@@ -199,6 +199,15 @@ body{
 }
 .notes-input{ resize: vertical; }
 .date-card{ overflow: hidden; }
+.text-input.hidden{ display:none; }
+select.text-input{
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--text-dim) 50%), linear-gradient(135deg, var(--text-dim) 50%, transparent 50%);
+  background-position: calc(100% - 20px) center, calc(100% - 15px) center;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
 
 /* ---------- choice buttons ---------- */
 .btn-group{ display:flex; gap:10px; flex-wrap: wrap; }
@@ -467,16 +476,19 @@ body{
   display:flex;
   background: var(--bg-elev);
   border-top: 1px solid var(--border);
-  padding: 8px 6px calc(8px + env(safe-area-inset-bottom));
+  padding: 6px 2px calc(6px + env(safe-area-inset-bottom));
   z-index: 20;
+  overflow-x: auto;
 }
 .tab-btn{
   flex:1;
+  min-width: 56px;
   display:flex; flex-direction:column; align-items:center; gap:2px;
   background:none; border:none; color: var(--text-dim);
-  font-size: 11px; font-weight: 600; padding: 6px 0; cursor:pointer;
+  font-size: 10px; font-weight: 600; padding: 6px 0; cursor:pointer;
+  white-space: nowrap;
 }
-.tab-icon{ font-size: 20px; }
+.tab-icon{ font-size: 18px; }
 .tab-btn.active{ color: var(--accent); }
 
 @media (min-width: 600px){

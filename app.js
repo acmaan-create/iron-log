@@ -5,6 +5,7 @@
   var PROFILE_KEY = "ironlog.profile.v1";
   var WEIGHTS_KEY = "ironlog.weights.v1";
   var COACH_SETTINGS_KEY = "ironlog.coachSettings.v1";
+  var EATOUT_KEY = "ironlog.eatout.v1";
   var THEME_KEY = "ironlog.theme.v1";
   var THEME_COLORS = { cream: "#f6ecd9", onyx: "#15171c", navy: "#f4f1ea", emerald: "#181c1a" };
 
@@ -87,10 +88,12 @@
   var entries = loadJSON(ENTRIES_KEY, {});   // keyed by "YYYY-MM-DD"
   var profile = loadJSON(PROFILE_KEY, {});   // {name, gender, age}
   var weights = loadJSON(WEIGHTS_KEY, {});   // keyed by "YYYY-MM-DD" -> number
+  var eatouts = loadJSON(EATOUT_KEY, []);    // array of {id, date, dish, mealType, cost}
 
   function saveEntries() { saveJSON(ENTRIES_KEY, entries); }
   function saveProfile() { saveJSON(PROFILE_KEY, profile); }
   function saveWeights() { saveJSON(WEIGHTS_KEY, weights); }
+  function saveEatouts() { saveJSON(EATOUT_KEY, eatouts); }
 
   // ---------- date helpers ----------
   function toKey(d) {
@@ -198,7 +201,8 @@
     calendar: document.getElementById("view-calendar"),
     stats: document.getElementById("view-stats"),
     weight: document.getElementById("view-weight"),
-    coach: document.getElementById("view-coach")
+    coach: document.getElementById("view-coach"),
+    eatout: document.getElementById("view-eatout")
   };
   tabBtns.forEach(function (btn) {
     btn.addEventListener("click", function () {
@@ -209,6 +213,7 @@
       if (btn.dataset.tab === "calendar") renderCalendar();
       if (btn.dataset.tab === "stats") renderStats();
       if (btn.dataset.tab === "weight") renderWeightTab();
+      if (btn.dataset.tab === "eatout") renderEatoutTab();
     });
   });
 
@@ -1187,6 +1192,236 @@
       }
       if (saved.cardioDuration) coachCardioDuration.value = saved.cardioDuration;
     }
+  }
+
+  // ================= EAT OUT TAB =================
+  var eatoutDate = document.getElementById("eatoutDate");
+  var eatoutDishSelect = document.getElementById("eatoutDishSelect");
+  var eatoutDishOther = document.getElementById("eatoutDishOther");
+  var eatoutMealGroup = document.getElementById("eatoutMealGroup");
+  var eatoutCost = document.getElementById("eatoutCost");
+  var eatoutWarning = document.getElementById("eatoutWarning");
+  var eatoutSaveBtn = document.getElementById("eatoutSaveBtn");
+  var eatoutRingFg = document.getElementById("eatoutRingFg");
+  var eatoutScoreVal = document.getElementById("eatoutScoreVal");
+  var eatoutScoreSub = document.getElementById("eatoutScoreSub");
+  var eatoutInsightsEl = document.getElementById("eatoutInsights");
+  var eatoutTrendEl = document.getElementById("eatoutTrend");
+  var eatoutHistoryEl = document.getElementById("eatoutHistory");
+
+  eatoutDate.value = todayKey();
+  var selectedMealType = null;
+
+  wireSingleSelect(eatoutMealGroup, function (v) { selectedMealType = v; });
+
+  eatoutDishSelect.addEventListener("change", function () {
+    eatoutDishOther.classList.toggle("hidden", eatoutDishSelect.value !== "Other");
+  });
+
+  function resetEatoutForm() {
+    eatoutDate.value = todayKey();
+    eatoutDishSelect.value = "";
+    eatoutDishOther.value = "";
+    eatoutDishOther.classList.add("hidden");
+    selectedMealType = null;
+    eatoutMealGroup.querySelectorAll(".choice-btn").forEach(function (b) { b.classList.remove("selected"); });
+    eatoutCost.value = "";
+    eatoutWarning.classList.add("hidden");
+  }
+
+  eatoutSaveBtn.addEventListener("click", function () {
+    var dish = eatoutDishSelect.value === "Other" ? eatoutDishOther.value.trim() : eatoutDishSelect.value;
+    if (!dish) {
+      eatoutWarning.textContent = "Pick what you ate, or type it in.";
+      eatoutWarning.classList.remove("hidden");
+      return;
+    }
+    eatoutWarning.classList.add("hidden");
+    eatouts.push({
+      id: Date.now() + "-" + Math.random().toString(36).slice(2, 8),
+      date: eatoutDate.value || todayKey(),
+      dish: dish,
+      mealType: selectedMealType,
+      cost: eatoutCost.value ? Number(eatoutCost.value) : null
+    });
+    saveEatouts();
+    resetEatoutForm();
+    renderEatoutTab();
+  });
+
+  function computeHomeCookedStreak() {
+    if (!eatouts.length) return null;
+    var dateSet = {};
+    eatouts.forEach(function (r) { dateSet[r.date] = true; });
+    if (dateSet[todayKey()]) return 0;
+    var sortedDates = eatouts.map(function (r) { return r.date; }).sort();
+    var earliest = fromKey(sortedDates[0]);
+    var streak = 0;
+    var d = new Date();
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() - 1);
+    while (d >= earliest) {
+      if (dateSet[toKey(d)]) break;
+      streak++;
+      d.setDate(d.getDate() - 1);
+    }
+    return streak;
+  }
+
+  function computeBestHomeCookedStreak(current) {
+    if (!eatouts.length) return 0;
+    var uniqueDates = Array.from(new Set(eatouts.map(function (r) { return r.date; }))).sort();
+    var best = 0;
+    for (var i = 1; i < uniqueDates.length; i++) {
+      var gap = Math.round((fromKey(uniqueDates[i]) - fromKey(uniqueDates[i - 1])) / 86400000) - 1;
+      if (gap > best) best = gap;
+    }
+    if (current !== null && current > best) best = current;
+    return best;
+  }
+
+  function renderEatoutMeter() {
+    var weekStart = startOfWeek(new Date());
+    var weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekEnd.getDate() + 7);
+    var count = eatouts.filter(function (r) {
+      var d = fromKey(r.date);
+      return d >= weekStart && d < weekEnd;
+    }).length;
+    var pct = Math.min(100, Math.round((count / 7) * 100));
+    eatoutScoreVal.textContent = count + (count === 1 ? " meal" : " meals");
+    var circumference = 2 * Math.PI * 52;
+    eatoutRingFg.style.strokeDasharray = circumference;
+    eatoutRingFg.style.strokeDashoffset = circumference - (circumference * pct) / 100;
+    var color, msg;
+    if (count <= 1) { color = "var(--accent)"; msg = "🌿 Clean week — mostly home-cooked! Keep it up."; }
+    else if (count <= 3) { color = "var(--office)"; msg = "👍 Balanced week — a treat here and there is fine."; }
+    else { color = "var(--danger)"; msg = "🍽️ Lots of eating out this week — maybe cook one meal tomorrow?"; }
+    eatoutRingFg.style.stroke = color;
+    eatoutScoreSub.textContent = msg;
+  }
+
+  function renderEatoutInsights() {
+    eatoutInsightsEl.innerHTML = "";
+    function chip(emoji, value, label) {
+      var el = document.createElement("div");
+      el.className = "insight-chip";
+      el.innerHTML =
+        '<span class="ic-emoji">' + emoji + '</span>' +
+        '<span class="ic-value">' + escapeHtml(String(value)) + '</span>' +
+        '<span class="ic-label">' + escapeHtml(label) + '</span>';
+      eatoutInsightsEl.appendChild(el);
+    }
+
+    if (!eatouts.length) {
+      chip("🥗", "No data yet", "Log a meal out to unlock insights");
+      return;
+    }
+
+    var weekStart = startOfWeek(new Date());
+    var weekEnd = new Date(weekStart); weekEnd.setDate(weekEnd.getDate() + 7);
+    var lastWeekStart = new Date(weekStart); lastWeekStart.setDate(lastWeekStart.getDate() - 7);
+    var thisWeekCount = eatouts.filter(function (r) { var d = fromKey(r.date); return d >= weekStart && d < weekEnd; }).length;
+    var lastWeekCount = eatouts.filter(function (r) { var d = fromKey(r.date); return d >= lastWeekStart && d < weekStart; }).length;
+    var deltaWeek = thisWeekCount - lastWeekCount;
+    var trendEmoji = deltaWeek <= 0 ? "📉" : "📈";
+    var trendText = deltaWeek < 0 ? ("Down " + Math.abs(deltaWeek)) : deltaWeek > 0 ? ("Up " + deltaWeek) : "Same";
+    chip("🍽️", thisWeekCount, "Meals Out This Week");
+    chip(trendEmoji, trendText, "Vs Last Week");
+
+    var streak = computeHomeCookedStreak();
+    chip("🥗", streak === null ? "—" : streak, "Home-Cooked Streak");
+    chip("🏆", computeBestHomeCookedStreak(streak), "Best Home-Cooked Streak");
+
+    var freq = {};
+    eatouts.forEach(function (r) { freq[r.dish] = (freq[r.dish] || 0) + 1; });
+    var favDish = "—", favCount = 0;
+    Object.keys(freq).forEach(function (dish) { if (freq[dish] > favCount) { favCount = freq[dish]; favDish = dish; } });
+    chip("⭐", favDish, "Most Ordered");
+
+    var now = new Date();
+    var spentThisMonth = eatouts.reduce(function (sum, r) {
+      var d = fromKey(r.date);
+      if (d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear() && r.cost) return sum + r.cost;
+      return sum;
+    }, 0);
+    if (spentThisMonth > 0) chip("💸", "₹" + spentThisMonth, "Spent This Month");
+  }
+
+  function renderEatoutTrend() {
+    eatoutTrendEl.innerHTML = "";
+    var weeks = [];
+    for (var i = 7; i >= 0; i--) {
+      var ws = startOfWeek(new Date());
+      ws.setDate(ws.getDate() - i * 7);
+      var we = new Date(ws); we.setDate(we.getDate() + 7);
+      var count = eatouts.filter(function (r) { var d = fromKey(r.date); return d >= ws && d < we; }).length;
+      weeks.push({ start: ws, count: count });
+    }
+    var maxCount = Math.max.apply(null, weeks.map(function (w) { return w.count; }).concat([1]));
+    weeks.forEach(function (w) {
+      var col = document.createElement("div");
+      col.className = "week-day";
+      var bar = document.createElement("div");
+      bar.className = "bar";
+      var fill = document.createElement("div");
+      fill.className = "bar-fill";
+      fill.style.height = (w.count / maxCount) * 100 + "%";
+      fill.style.background = "var(--cardio)";
+      bar.appendChild(fill);
+      var lbl = document.createElement("div");
+      lbl.className = "lbl";
+      lbl.textContent = w.start.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+      col.appendChild(bar);
+      col.appendChild(lbl);
+      eatoutTrendEl.appendChild(col);
+    });
+  }
+
+  function renderEatoutHistory() {
+    eatoutHistoryEl.innerHTML = "";
+    if (!eatouts.length) {
+      var eh = document.createElement("div");
+      eh.className = "weight-empty-history";
+      eh.textContent = "No meals out logged yet.";
+      eatoutHistoryEl.appendChild(eh);
+      return;
+    }
+    var sorted = eatouts.slice().sort(function (a, b) {
+      if (a.date !== b.date) return a.date < b.date ? 1 : -1;
+      return 0;
+    });
+    sorted.forEach(function (r) {
+      var row = document.createElement("div");
+      row.className = "weight-history-row";
+      var left = document.createElement("span");
+      left.className = "wh-date";
+      left.textContent = fromKey(r.date).toDateString() + (r.mealType ? " · " + r.mealType : "");
+      var mid = document.createElement("span");
+      mid.className = "wh-val";
+      mid.textContent = r.dish + (r.cost ? " · ₹" + r.cost : "");
+      var delBtn = document.createElement("button");
+      delBtn.type = "button";
+      delBtn.className = "wh-del";
+      delBtn.textContent = "Delete";
+      delBtn.addEventListener("click", function () {
+        if (!confirm("Delete this eat-out entry (" + r.dish + ")?")) return;
+        eatouts = eatouts.filter(function (x) { return x.id !== r.id; });
+        saveEatouts();
+        renderEatoutTab();
+      });
+      row.appendChild(left);
+      row.appendChild(mid);
+      row.appendChild(delBtn);
+      eatoutHistoryEl.appendChild(row);
+    });
+  }
+
+  function renderEatoutTab() {
+    renderEatoutMeter();
+    renderEatoutInsights();
+    renderEatoutTrend();
+    renderEatoutHistory();
   }
 
   // ================= INIT =================

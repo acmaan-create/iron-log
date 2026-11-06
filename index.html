@@ -341,6 +341,81 @@
     </div>
   </section>
 
+  <!-- EAT OUT TAB -->
+  <section class="view hidden" id="view-eatout">
+    <div class="card">
+      <label class="field-label">Log a Meal Out</label>
+      <input type="date" id="eatoutDate" class="date-input" style="margin-bottom:12px;">
+
+      <label class="field-label small-label">What did you eat?</label>
+      <select id="eatoutDishSelect" class="text-input">
+        <option value="">Select a dish…</option>
+        <option value="🍛 Biryani">🍛 Biryani</option>
+        <option value="🍗 Butter Chicken">🍗 Butter Chicken</option>
+        <option value="🧀 Paneer Butter Masala">🧀 Paneer Butter Masala</option>
+        <option value="🫓 Chole Bhature">🫓 Chole Bhature</option>
+        <option value="🍞 Pav Bhaji">🍞 Pav Bhaji</option>
+        <option value="🥞 Masala Dosa">🥞 Masala Dosa</option>
+        <option value="🍚 Idli Sambar">🍚 Idli Sambar</option>
+        <option value="🥔 Vada Pav">🥔 Vada Pav</option>
+        <option value="🥟 Momos">🥟 Momos</option>
+        <option value="🍕 Pizza">🍕 Pizza</option>
+        <option value="🍔 Burger">🍔 Burger</option>
+        <option value="🍜 Hakka Noodles / Manchurian">🍜 Hakka Noodles / Manchurian</option>
+        <option value="🌯 Shawarma">🌯 Shawarma</option>
+        <option value="🌯 Kathi Roll">🌯 Kathi Roll</option>
+        <option value="🍽️ Thali">🍽️ Thali</option>
+        <option value="🍝 Pasta">🍝 Pasta</option>
+        <option value="🍣 Sushi">🍣 Sushi</option>
+        <option value="🍢 Tandoori / Kebabs">🍢 Tandoori / Kebabs</option>
+        <option value="🥘 Chaat / Samosa">🥘 Chaat / Samosa</option>
+        <option value="🍨 Ice Cream / Dessert">🍨 Ice Cream / Dessert</option>
+        <option value="Other">✏️ Other (type it in)</option>
+      </select>
+      <input type="text" id="eatoutDishOther" class="text-input hidden" placeholder="What did you order?" style="margin-top:10px;">
+
+      <label class="field-label small-label">Meal</label>
+      <div class="btn-group" id="eatoutMealGroup">
+        <button type="button" class="choice-btn small" data-value="Breakfast">🌅<span>Breakfast</span></button>
+        <button type="button" class="choice-btn small" data-value="Lunch">☀️<span>Lunch</span></button>
+        <button type="button" class="choice-btn small" data-value="Dinner">🌙<span>Dinner</span></button>
+        <button type="button" class="choice-btn small" data-value="Snack">🍿<span>Snack</span></button>
+      </div>
+
+      <label class="field-label small-label">Approx. cost (₹, optional)</label>
+      <input type="number" id="eatoutCost" class="text-input" min="0" step="10" placeholder="e.g. 350">
+
+      <div id="eatoutWarning" class="score-sub hidden" style="color: var(--danger); text-align:center; margin-top: 10px;"></div>
+      <button type="button" id="eatoutSaveBtn" class="save-btn">Log Meal Out</button>
+    </div>
+
+    <div class="card">
+      <label class="field-label">Eat-Out Meter — This Week</label>
+      <div class="score-ring-wrap">
+        <svg viewBox="0 0 120 120" class="score-ring">
+          <circle cx="60" cy="60" r="52" class="ring-bg"></circle>
+          <circle cx="60" cy="60" r="52" class="ring-fg" id="eatoutRingFg"></circle>
+        </svg>
+        <div class="score-ring-val" id="eatoutScoreVal">0%</div>
+      </div>
+      <div class="score-sub" id="eatoutScoreSub" style="text-align:center;">Log a meal to see your meter</div>
+    </div>
+
+    <div class="card">
+      <div id="eatoutInsights" class="insights-grid"></div>
+    </div>
+
+    <div class="card">
+      <label class="field-label">8-Week Trend</label>
+      <div id="eatoutTrend" class="week-bar"></div>
+    </div>
+
+    <div class="card">
+      <label class="field-label">History</label>
+      <div id="eatoutHistory" class="weight-history"></div>
+    </div>
+  </section>
+
 </main>
 
 <nav class="tabbar">
@@ -349,6 +424,7 @@
   <button class="tab-btn" data-tab="stats"><span class="tab-icon">📊</span><span>Stats</span></button>
   <button class="tab-btn" data-tab="weight"><span class="tab-icon">⚖️</span><span>Weight</span></button>
   <button class="tab-btn" data-tab="coach"><span class="tab-icon">🧠</span><span>Coach</span></button>
+  <button class="tab-btn" data-tab="eatout"><span class="tab-icon">🍽️</span><span>Eats</span></button>
 </nav>
 
 <script src="app.js"></script>
